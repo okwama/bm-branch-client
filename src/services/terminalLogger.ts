@@ -6,16 +6,26 @@ interface LogEntry {
   data?: any;
 }
 
+// Use the same base URL logic as the main API service
+const getApiBaseUrl = (): string => {
+  const url = import.meta.env.VITE_API_URL;
+  if (!url) {
+    // Fall back to production server instead of localhost
+    return 'https://bm-branch-server.vercel.app/api';
+  }
+  return url.endsWith('/api') ? url : `${url}/api`;
+};
+
 class TerminalLogger {
   private baseUrl: string;
 
   constructor() {
-    this.baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+    this.baseUrl = getApiBaseUrl();
   }
 
   private async sendLog(entry: LogEntry) {
     try {
-      await fetch(`${this.baseUrl}/api/logs`, {
+      await fetch(`${this.baseUrl}/logs`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
