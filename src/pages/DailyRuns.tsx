@@ -34,17 +34,6 @@ interface DateSummary {
   totalAmountCompleted: number;
 }
 
-interface Client {
-  id: number;
-  name: string;
-}
-
-interface Branch {
-  id: number;
-  name: string;
-  client_id: number;
-}
-
 interface Run {
   id: number;
   pickup_location: string;
@@ -62,35 +51,12 @@ const DailyRuns: React.FC = () => {
   const [dateSummaries, setDateSummaries] = useState<DateSummary[]>([]);
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
-  const [clients, setClients] = useState<Client[]>([]);
-  const [branches, setBranches] = useState<Branch[]>([]);
-  const [selectedClient, setSelectedClient] = useState<number | ''>('');
-  const [selectedBranch, setSelectedBranch] = useState<number | ''>('');
   const [viewMode, setViewMode] = useState<'table' | 'graph'>('table');
   const [runs, setRuns] = useState<Run[]>([]);
 
   useEffect(() => {
-    fetchClients();
-  }, []);
-
-  useEffect(() => {
-    if (selectedClient) {
-      fetchBranches(selectedClient);
-    } else {
-      setBranches([]);
-      setSelectedBranch('');
-    }
-  }, [selectedClient]);
-
-  useEffect(() => {
-    if (user?.id) {
-      setSelectedBranch(user.id);
-    }
-  }, [user?.id]);
-
-  useEffect(() => {
     fetchDateSummaries();
-  }, [selectedYear, selectedMonth, selectedClient, selectedBranch]);
+  }, [selectedYear, selectedMonth, user?.id]);
 
   useEffect(() => {
     const fetchRuns = async () => {
@@ -114,24 +80,6 @@ const DailyRuns: React.FC = () => {
     if (date) fetchRuns();
   }, [date, user?.id]);
 
-  const fetchClients = async () => {
-    try {
-      const response = await api.get('/clients');
-      setClients(response.data);
-    } catch (err) {
-      console.error('Error fetching clients:', err);
-    }
-  };
-
-  const fetchBranches = async (clientId: number) => {
-    try {
-      const response = await api.get(`/clients/${clientId}/branches`);
-      setBranches(response.data);
-    } catch (err) {
-      console.error('Error fetching branches:', err);
-    }
-  };
-
   const fetchDateSummaries = async () => {
     try {
       setLoading(true);
@@ -140,13 +88,9 @@ const DailyRuns: React.FC = () => {
         year: selectedYear.toString(),
         month: selectedMonth.toString()
       });
+      // Always use current user's branch ID
       if (user?.id) {
         params.append('branchId', user.id.toString());
-      } else if (selectedBranch) {
-        params.append('branchId', selectedBranch.toString());
-      }
-      if (selectedClient) {
-        params.append('clientId', selectedClient.toString());
       }
       const response = await api.get(`/runs/summaries?${params.toString()}`);
       setDateSummaries(response.data);
@@ -258,31 +202,13 @@ const DailyRuns: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold text-gray-900">Runs Summary</h1>
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900">Runs Summary</h1>
+          {user?.name && (
+            <p className="text-sm text-gray-600 mt-1">Branch: {user.name}</p>
+          )}
+        </div>
         <div className="flex items-center space-x-4">
-          <select
-            value={selectedClient}
-            onChange={(e) => setSelectedClient(e.target.value ? Number(e.target.value) : '')}
-            className="rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
-            hidden
-          >
-            <option value="">All Clients</option>
-            {clients.map(client => (
-              <option key={client.id} value={client.id}>{client.name}</option>
-            ))}
-          </select>
-          <select
-            value={selectedBranch}
-            onChange={(e) => setSelectedBranch(e.target.value ? Number(e.target.value) : '')}
-            className="rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
-            disabled={!selectedClient}
-            hidden
-          >
-            <option value="">All Branches</option>
-            {branches.map(branch => (
-              <option key={branch.id} value={branch.id}>{branch.name}</option>
-            ))}
-          </select>
           <select
             value={selectedYear}
             onChange={(e) => setSelectedYear(Number(e.target.value))}
@@ -335,13 +261,13 @@ const DailyRuns: React.FC = () => {
       {/* Summary Totals */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-medium text-gray-900">Total Runs (All)</h3>
+          <h3 className="text-lg font-medium text-gray-900">Total Runs</h3>
           <p className="mt-2 text-3xl font-semibold text-gray-900">
             {dateSummaries.reduce((sum, summary) => sum + Number(summary.totalRuns || 0), 0)}
           </p>
         </div>
         <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-medium text-gray-900">Total Amount (All Runs)</h3>
+          <h3 className="text-lg font-medium text-gray-900">Total Amount</h3>
           <p className="mt-2 text-3xl font-semibold text-gray-900">
             {dateSummaries.reduce((sum, summary) => sum + Number(summary.totalAmount || 0), 0).toFixed(2)}
           </p>
@@ -358,7 +284,6 @@ const DailyRuns: React.FC = () => {
                 ? 'bg-red-600 text-white'
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
-            hidden
           >
             Table View
           </button>
@@ -369,7 +294,6 @@ const DailyRuns: React.FC = () => {
                 ? 'bg-red-600 text-white'
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
-            hidden
           >
             Graph View
           </button>
@@ -468,7 +392,7 @@ export const RunsForDatePage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!date) return;
+    if (!date || !user?.id) return;
     const fetchRuns = async () => {
       setLoading(true);
       setError(null);
@@ -478,7 +402,8 @@ export const RunsForDatePage: React.FC = () => {
           const dateOnly = date.split('T')[0];
           params.append('pickupDate', dateOnly);
         }
-        if (user?.id) params.append('branchId', user.id.toString());
+        // Always use current user's branch ID
+        params.append('branchId', user.id.toString());
         const response = await api.get(`/requests?${params.toString()}`);
         setRuns(response.data);
       } catch (err) {
@@ -501,7 +426,12 @@ export const RunsForDatePage: React.FC = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h2 className="text-xl font-semibold mb-4">Runs for {date}</h2>
+      <div className="mb-6">
+        <h2 className="text-xl font-semibold mb-2">Runs for {date}</h2>
+        {user?.name && (
+          <p className="text-sm text-gray-600">Branch: {user.name}</p>
+        )}
+      </div>
       {loading ? (
         <div className="flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
