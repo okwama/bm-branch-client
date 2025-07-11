@@ -7,7 +7,7 @@ export interface RequestData {
   serviceTypeName: string;
   userName: string;
   branchName: string;
-  status: number;
+  status: string;
   myStatus: number;
   price: number;
   team_id: number | null;
@@ -133,7 +133,6 @@ const mapRequestFields = (request: any): RequestData => ({
   serviceTypeName: request.service_type_name,
   userName: request.user_name,
   branchName: request.branch_name,
-  client_name: request.client_name,
   status: request.status,
   myStatus: request.my_status,
   price: request.price,
@@ -144,5 +143,6 @@ const mapRequestFields = (request: any): RequestData => ({
   deliveryLocation: request.delivery_location,
   pickupDate: request.pickup_date,
   priority: request.priority,
-  branchId: request.branch_id
+  branchId: request.branch_id,
+  staff_id: request.staff_id
 }); 

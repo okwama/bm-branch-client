@@ -150,6 +150,9 @@ const RequestsTable: React.FC<RequestsTableProps> = ({ requests, onRequestClick 
                     Branch
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Pickup Location
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Delivery Location
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -169,7 +172,7 @@ const RequestsTable: React.FC<RequestsTableProps> = ({ requests, onRequestClick 
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredRequests.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-6 py-4 text-center text-sm text-gray-500">
+                    <td colSpan={8} className="px-6 py-4 text-center text-sm text-gray-500">
                       No requests found
                     </td>
                   </tr>
@@ -179,6 +182,7 @@ const RequestsTable: React.FC<RequestsTableProps> = ({ requests, onRequestClick 
                       <TableRow key={request.id}>
                         <TableCell>{request.userName}</TableCell>
                         <TableCell>{request.branchName}</TableCell>
+                        <TableCell>{request.pickupLocation}</TableCell>
                         <TableCell>{request.deliveryLocation}</TableCell>
                         <TableCell>{Number(request.price || 0).toFixed(2)}</TableCell>
                         <TableCell>{new Date(request.pickupDate).toLocaleDateString()}</TableCell>

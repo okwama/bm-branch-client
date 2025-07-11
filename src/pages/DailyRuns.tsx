@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { api } from '../services/api';
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -9,10 +8,13 @@ import {
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
 } from 'chart.js';
+import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, useParams } from 'react-router-dom';
+import RequestsTable from '../components/Requests/RunsTable';
+import { RequestData } from '../services/requestService';
 
 ChartJS.register(
   CategoryScale,
@@ -461,7 +463,7 @@ export default DailyRuns;
 export const RunsForDatePage: React.FC = () => {
   const { date } = useParams<{ date: string }>();
   const { user } = useAuth();
-  const [runs, setRuns] = useState<Run[]>([]);
+  const [runs, setRuns] = useState<RequestData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -488,6 +490,11 @@ export const RunsForDatePage: React.FC = () => {
     fetchRuns();
   }, [date, user?.id]);
 
+  const handleRequestClick = (requestId: number) => {
+    // Handle request click - you can add navigation or modal here
+    console.log('Request clicked:', requestId);
+  };
+
   if (!date) {
     return null;
   }
@@ -496,35 +503,16 @@ export const RunsForDatePage: React.FC = () => {
     <div className="container mx-auto px-4 py-8">
       <h2 className="text-xl font-semibold mb-4">Runs for {date}</h2>
       {loading ? (
-        <div>Loading...</div>
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
+        </div>
       ) : error ? (
         <div className="text-red-600">{error}</div>
       ) : (
-        <table className="min-w-full divide-y divide-gray-200 bg-white shadow rounded-lg">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pickup Location</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Delivery Location</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Charges</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pickup Date</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {runs.map(run => (
-              <tr key={run.id}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{run.pickup_location}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{run.delivery_location}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{run.price}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{run.pickup_date}</td>
-              </tr>
-            ))}
-            {runs.length === 0 && (
-              <tr>
-                <td colSpan={4} className="px-6 py-4 text-center text-sm text-gray-500">No runs for this date</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+        <RequestsTable 
+          requests={runs} 
+          onRequestClick={handleRequestClick}
+        />
       )}
     </div>
   );
