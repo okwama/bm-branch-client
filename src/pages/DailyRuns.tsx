@@ -293,7 +293,7 @@ const DailyRuns: React.FC = () => {
               viewMode === 'graph'
                 ? 'bg-red-600 text-white'
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-            }`}
+            }`} hidden
           >
             Graph View
           </button>
@@ -346,13 +346,13 @@ const DailyRuns: React.FC = () => {
         </div>
       )}
 
-      <h2 className="text-xl font-semibold mb-4 mt-6">Runs for {date}</h2>
+      <h2 className="text-xl font-semibold mb-4 mt-6" hidden>Runs for {date}</h2>
       {loading ? (
-        <div>Loading...</div>
+        <div hidden>Loading...</div>
       ) : error ? (
-        <div className="text-red-600">{error}</div>
+        <div className="text-red-600" hidden>{error}</div>
       ) : (
-        <table className="min-w-full divide-y divide-gray-200 bg-white shadow rounded-lg">
+        <table className="min-w-full divide-y divide-gray-200 bg-white shadow rounded-lg" hidden>
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pickup Location</th>
@@ -425,7 +425,7 @@ export const RunsForDatePage: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8" hidden>
       <div className="mb-6">
         <h2 className="text-xl font-semibold mb-2">Runs for {date}</h2>
         {user?.name && (
